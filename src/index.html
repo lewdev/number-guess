@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Number Guessing Game">
+  <meta name="author" content="Lewis Nakao">
+  <title>Number Guessing Game</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="./assets/bootstrap.min.css" rel="stylesheet" >
+  <link href="./assets/bootstrap-grid.min.css" rel="stylesheet" >
+  <link href="./assets/bootstrap-reboot.min.css" rel="stylesheet" >
+  <link href="./assets/fontawesome.all.min.css" rel="stylesheet">
+
+  <!-- Favicons
+  <link rel="apple-touch-icon" href="/docs/4.4/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="/docs/4.4/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="/docs/4.4/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
+  <link rel="manifest" href="/docs/4.4/assets/img/favicons/manifest.json">
+  <link rel="mask-icon" href="/docs/4.4/assets/img/favicons/safari-pinned-tab.svg" color="#563d7c">
+  <link rel="icon" href="/docs/4.4/assets/img/favicons/favicon.ico">
+  <meta name="msapplication-config" content="/docs/4.4/assets/img/favicons/browserconfig.xml">
+  -->
+  <meta name="theme-color" content="#563d7c">
+  <!-- Custom styles for this template -->
+  <link href="./style.css" rel="stylesheet">
+</head>
+<body>
+<main role="main" class="text-center w-100">
+  <div id="startScreen" class="ml-auto mr-auto w-50">
+    <div class="m-4" style="color: Mediumslateblue;">
+      <i class="far fa-question-circle fa-lg fa-5x"></i>
+    </div>
+    <h3>Number Guessing Game</h3>
+    <table class=" ml-auto mr-auto w-75"><tbody><tr>
+      <td><strong>Difficulty:</strong></td>
+      <td>
+        <select id="difficultySelect" class="form-control"></select>
+      </td>
+    </tbody></table>
+    <button class="btn btn-lg btn-primary mt-2" id="startBtn">
+      <i class="far fa-play-circle fa-fw"></i> Start
+    </button>
+    <div class="m-3 playerHistory"></div>
+  </div>
+  <div id="gameScreen" class="ml-auto mr-auto w-50" style="display:none">
+    <div class="m-4" style="color: Mediumslateblue;">
+      <i class="far fa-question-circle fa-lg fa-5x"></i>
+    </div>
+    <h3>What Number Is It?</h3>
+    <div class="m-3 difficulty"></div>
+    <input type="text" id="numberInput" class="form-control mb-2" placeholder="Guess Input" autofocus />
+    <button class="btn btn-lg btn-secondary mt-2" title="Go back to start screen."
+      onclick="numberGuessingGame.gotoStartScreen();">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <button class="btn btn-lg btn-primary mt-2" id="guessBtn">
+      <i class="far fa-play-circle fa-fw"></i> Guess
+    </button>
+    <div id="lastGuessResponse" class="m-3"></div>
+    <div class="m-3 prevGuesses"></div>
+  </div>
+  <div id="endScreen" class="ml-auto mr-auto w-50" style="display:none">
+    <h3>You guessed CORRECT!</h3>
+    <button class="btn btn-lg btn-secondary mt-2" title="Go back to start screen."
+      onclick="numberGuessingGame.gotoStartScreen();">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <button class="btn btn-lg btn-primary mt-2" onclick="numberGuessingGame.startGame();">
+      <i class="far fa-play-circle fa-fw"></i> Play Again
+    </button>
+    <div class="m-3 prevGuesses"></div>
+    <div class="m-3 timeMs"></div>
+    <div class="m-3 difficulty"></div>
+    <div class="m-3 playerHistory"></div>
+  </div>
+  <div id="historyScreen" class="ml-auto mr-auto w-50" style="display:none">
+    History Screen
+  </div>
+  <div>
+    <p class="mt-5 mb-3 text-muted">
+      <a href="https://lewdev.github.io/">Lewis Nakao</a> &copy; 2020</p>
+  </div>
+</main>
+<script src="./assets/jquery-3.5.0.min.js"></script>
+<script src="./assets/polyfill.min.js"></script>
+<script src="./assets/bootstrap.bundle.min.js"></script>
+<script src="./assets/bootstrap.min.js"></script>
+<script src="./DateUtil.js"></script>
+<script src="./HtmlUtil.js"></script>
+<script src="./script.js"></script>
+</body></html>

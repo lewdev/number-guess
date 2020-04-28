@@ -147,12 +147,12 @@ var HtmlUtil = (function() {
     }
     elem.dispatchEvent(event);
   }
-  function scrollTo(elemId) {
-    var div = document.querySelector("#" + elemId);
-    if (div) {
-      div.scrollIntoView({ behavior: "smooth" });
-    }
-  }
+  // function scrollTo(elemId) {
+    // var div = document.querySelector("#" + elemId);
+    // if (div) {
+      // div.scrollIntoView({ behavior: "smooth" });
+    // }
+  // }
   /**
    * Creates the ScrollToTop feature and returns it
    */
@@ -268,7 +268,7 @@ var HtmlUtil = (function() {
     createLinkWithTitleStr: createLinkWithTitleStr,
     createLinkWithTitleTargetStr: createLinkWithTitleTargetStr,
     trigger: trigger,
-    scrollTo: scrollTo,
+    // scrollTo: scrollTo,
     createScrollToTop: createScrollToTop,
     addModal: addModal,
     offsetY: offsetY,

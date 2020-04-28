@@ -5,7 +5,6 @@ var numberGuessingGame = (function() {
     , endScreen = document.getElementById("endScreen")
     , historyScreen = document.getElementById("historyScreen")
     , numberInput = document.getElementById("numberInput")
-    , startBtn = document.getElementById("startBtn")
     , guessBtn = document.getElementById("guessBtn")
     , difficultySelect = document.getElementById("difficultySelect")
     , lastGuessResponse = document.getElementById("lastGuessResponse")
@@ -15,14 +14,22 @@ var numberGuessingGame = (function() {
       , "Medium": [1, 100]
       , "Hard": [1, 1000]
       , "Insane": [1, 10000]
-    },
-    MAX_HISTORY = 10
+      , "Nightmare": [1, 1000000]
+    }
+    , difficultyIcon = {
+      "Easy": "far fa-laugh-beam"
+      , "Medium": "far fa-smile"
+      , "Hard": "far fa-grin-beam-sweat"
+      , "Insane": "far fa-grin-squint-tears"
+      , "Nightmare": "fas fa-poo"
+    }
+    , MAX_HISTORY = 10
   ;
   let data = {
-    currentView: VIEW.START
-    , selectedDifficulty: "Easy"
-    , currentGame: null,
-    history: []
+    "currentView": VIEW.START
+    , "selectedDifficulty": "Easy"
+    , "currentGame": null
+    , "history": []
   };
   window.onload = function() {
     loadData();
@@ -31,9 +38,20 @@ var numberGuessingGame = (function() {
     render();
   };
   function initUi() {
-    startBtn.onclick = function() {
-      startGame();
-    };
+    const startBtns = document.querySelectorAll(".startBtn");
+    const gotoStartScreenBtns = document.querySelectorAll(".gotoStartScreenBtn");
+    if (startBtns) {
+      let i, size = startBtns.length;
+      for (i = 0; i < size; i++) {
+        startBtns[i].onclick = startGame;
+      }
+    }
+    if (gotoStartScreenBtns) {
+      let i, size = gotoStartScreenBtns.length;
+      for (i = 0; i < size; i++) {
+        gotoStartScreenBtns[i].onclick = gotoStartScreen;
+      }
+    }
     guessBtn.onclick = function() {
       guess();
     };
@@ -55,9 +73,10 @@ var numberGuessingGame = (function() {
       data['selectedDifficulty'] = difficultySelect.value;
       render();
     };
+    difficultySelect.value = data['selectedDifficulty'];
+    HtmlUtil.trigger(difficultySelect, "change");
   }
   function render() {
-    numberInput.focus();
     const isStart = data['currentView'] === VIEW.START
       , isGame = data['currentView'] === VIEW.GAME
       , isEnd = data['currentView'] === VIEW.END
@@ -89,13 +108,13 @@ var numberGuessingGame = (function() {
     if (guessedNum) {
       const guesses = data['currentGame']['guesses'];
       if (guessedNum < number) {
-        response += "You guessed too low!";
+        response += "Your guess: " + guessedNum + " was too low!";
       }
       else if (guessedNum > number) {
-        response += "You guessed too high!";
+        response += "Your guess: " + guessedNum + " was too high!";
       }
       else if (guessedNum === number) {
-        response += "You guessed CORRECT!";
+        response += "Your guess: " + guessedNum + " was CORRECT!";
       }
     }
     lastGuessResponse.innerHTML = response;
@@ -118,10 +137,11 @@ var numberGuessingGame = (function() {
       if (difficultyDiv) {
         const diff = data['currentGame']['difficulty'];
         difficultyDiv.innerHTML = "<strong>Difficulty:</strong> " + diff
-          + ' (' + difficulty[diff][0] + '-' + difficulty[diff][1] + ')';
+          + ' (' + difficulty[diff][0] + '-' + difficulty[diff][1] + ') <i class="' + difficultyIcon[diff] + '"></i>';
       }
     }
     renderHistory(screen);
+    numberInput.focus();
   }
   function gotoStartScreen() {
     data['currentView'] = VIEW.START;
@@ -131,6 +151,7 @@ var numberGuessingGame = (function() {
   }
   function startGame() {
     const selectedDiff = data['selectedDifficulty'];
+    numberInput.value = "";
     data['currentView'] = VIEW.GAME;
     data['currentGame'] = {
       'number': randRange(difficulty[selectedDiff][0], difficulty[selectedDiff][1])
@@ -152,7 +173,7 @@ var numberGuessingGame = (function() {
     else {
       data['currentGame']['guessedNumber'] = null;
     }
-    numberInput.value = "";
+    numberInput.focus();
     if (data['currentGame']['guessedNumber'] === data['currentGame']['number']) {
       endGame();
     }
@@ -177,35 +198,37 @@ var numberGuessingGame = (function() {
     if (!playerHistory) {
       return;
     }
-    let arr = [], i, size = data['history'].length, item, displayed = 0;
+    const diff = data['selectedDifficulty'];
+    const filteredList = data['history'].filter(item => { return item['difficulty'] === diff; });
+    let arr = [], i, size = filteredList.length, item;
+    HtmlUtil.addArrToArr([
+      //'<h4><strong>Difficulty:</strong> ', diff, ' <i class="', difficultyIcon[diff], '"></i></h4>'
+      '<table class="table"><thead>'
+      , '<th>Date</th>'
+      , '<th>Difficulty</th>'
+      , '<th>Guesses</th>'
+      , '<th>Time</th>'
+      , '</thead><tbody>'
+    ], arr);
     if (size > 0) {
-      arr.push('<table class="table"><thead>'
-        , '<th>Date</th>'
-        , '<th>Difficulty</th>'
-        , '<th>Guesses</th>'
-        , '<th>Time</th>'
-        , '</thead><tbody>');
       for (i = 0; i < size; i++) {
-        item = data['history'][i];
-        if (displayed < MAX_HISTORY && data['selectedDifficulty'] === item['difficulty']) {
-          HtmlUtil.addArrToArr([
-            '<tr>'
-            , '<td>', DateUtil.format(new Date(item['startDate']), "M/dd/yyyy HH:mm"), '</td>'
-            , '<td>', item['difficulty'], '</td>'
-            , '<td><div title="', item['guesses'].join(", "), '">'
-              , item['guesses'].length, '</div></td>'
-            , '<td>', (item['timeMs'] / 1000), 's</td>'
-            , '</tr>'
-          ], arr);
-          displayed++;
-        }
+        item = filteredList[i];
+        HtmlUtil.addArrToArr([
+          '<tr>'
+          , '<td>', DateUtil.format(new Date(item['startDate']), "M/dd/yyyy HH:mm"), '</td>'
+          , '<td>', ' <i class="' + difficultyIcon[item['difficulty']] + '"></i></td>' //, item['difficulty']
+          , '<td><div title="', item['guesses'].join(", "), '">'
+            , item['guesses'].length, '</div></td>'
+          , '<td>', (item['timeMs'] / 1000), 's</td>'
+          , '</tr>'
+        ], arr);
       }
-      arr.push('</tbody></table>');
-      playerHistory.innerHTML = arr.join("");
     }
     else {
-      playerHistory.innerHTML = "";
+      arr.push('<tr><td colspan="4">No records found.</td></tr>');
     }
+    arr.push('</tbody></table>');
+    playerHistory.innerHTML = arr.join("");
   }
   function loadData() {
     const localData = window.localStorage.getItem(APP_DATA_KEY);
@@ -228,8 +251,4 @@ var numberGuessingGame = (function() {
   function randRange(min, max) {
     return Math.floor(Math.random() * Math.abs(max - min)) + min;
   }
-  return {
-    startGame: startGame
-    , gotoStartScreen: gotoStartScreen
-  };
 })();

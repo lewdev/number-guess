@@ -63,7 +63,7 @@ const Achievements = (() => {
         return difficulty === difficultyLevel && time > ultraTime(cpuCount) && time <= superTime(cpuCount);
       }
     };
-    gameAchievementList["Ultra Fast Guesser (" + difficultyLevel + ")"] = {
+    gameAchievementList[`Ultra Fast Guesser (${difficultyLevel})`] = {
       description: "Holy moly, you're fast!",
       isComplete: achievementParams => {
         const { difficulty, time, cpuCount } = achievementParams;

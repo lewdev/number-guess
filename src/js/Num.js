@@ -1,11 +1,12 @@
 const Num = {
-  thousandsSeparators: num => {
+  format: num => {
+    if (!num) return "null";
     let numParts = num.toString().split('.');
     numParts[0] = numParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     return numParts.join('.');
   },
   formatCurrency: num => {
-    return "$" + Num.thousandsSeparators(num);
+    return "$" + Num.format(num);
   },
   isPrime: num => {
     //check if value is a natural numbers (integer)

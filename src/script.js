@@ -1,3 +1,9 @@
+/**
+ * TODO
+ * - create favicons
+ * - enable star-rating.
+ * - check if no response bug exists.
+ */
 var numberGuessingGame = (() => {
   const APP_DATA_KEY = "number-guessing-game"
     , startScreen = document.getElementById("startScreen")
@@ -50,7 +56,7 @@ var numberGuessingGame = (() => {
         const isAchView = data["currentSubView"] && data["currentSubView"] === Config.SUB_VIEW.ACHIEVEMENTS;
         data["currentSubView"] = isAchView ? Config.SUB_VIEW.HISTORY : Config.SUB_VIEW.ACHIEVEMENTS;
         switchSubViewBtn.title = "See " + (isAchView ? "Achievements" : "History");
-        switchSubViewBtn.innerHTML = '<i class="fas fa-' + (isAchView ? 'medal' : 'history') + ' fa-fw"></i>';
+        switchSubViewBtn.innerHTML = `<i class="fas fa-${isAchView ? 'medal' : 'history'} fa-fw"></i>`;
         render();
       };
     }
@@ -69,7 +75,7 @@ var numberGuessingGame = (() => {
       HtmlUtil.addArrToArr([
         '<option value="', diff, '">', diff, ' ('
         , Config.DIFFICULTY_LEVELS[diff][0], '-'
-        , Num.thousandsSeparators(Config.DIFFICULTY_LEVELS[diff][1]), ')</option>'
+        , Num.format(Config.DIFFICULTY_LEVELS[diff][1]), ')</option>'
       ], arr);
     }
     difficultySelect.innerHTML = arr.join("");
@@ -99,14 +105,12 @@ var numberGuessingGame = (() => {
         cache["incrementBy"] = incrementBy * 10;
       }
     }
-    else {
-      if (incrementBy > 1) {
-        cache["incrementBy"] = incrementBy / 10;
-      }
+    else if (incrementBy > 1) {
+      cache["incrementBy"] = incrementBy / 10;
     }
     increaseIncrementBtn.disabled = cache["incrementBy"] === maxIncrement;
     decreaseIncrementBtn.disabled = cache["incrementBy"] === 1;
-    const incrementStr = Num.thousandsSeparators(cache["incrementBy"]);
+    const incrementStr = Num.format(cache["incrementBy"]);
     addBtn.innerHTML = "+" + incrementStr;
     subtractBtn.innerHTML = "-" + incrementStr;
   };
@@ -153,15 +157,16 @@ var numberGuessingGame = (() => {
       , number = data['currentGame']['number']
       , guessedNum = data['currentGame']['guessedNumber'];
     if (guessedNum) {
-      const guesses = data['currentGame']['guesses'];
+      //const guesses = data['currentGame']['guesses'];
+      const guessedNumStr = Num.format(guessedNum)
       if (guessedNum < number) {
-        response += "Your guess: " + guessedNum + " was too low!";
+        response += "Your guess: " + guessedNumStr + " was too low!";
       }
-      else if (guessedNum > number) {
-        response += "Your guess: " + guessedNum + " was too high!";
+      else if (guessedNumStr > number) {
+        response += "Your guess: " + guessedNumStr + " was too high!";
       }
       else if (guessedNum === number) {
-        response += "Your guess: " + guessedNum + " was CORRECT!";
+        response += "Your guess: " + guessedNumStr + " was CORRECT!";
       }
     }
     lastGuessResponse.innerHTML = response;
@@ -190,7 +195,7 @@ var numberGuessingGame = (() => {
       if (difficultyDiv) {
         const diff = data['currentGame']['difficulty'];
         difficultyDiv.innerHTML = "<strong>Difficulty:</strong> " + diff
-          + ' (' + Config.DIFFICULTY_LEVELS[diff][0] + '-' + Num.thousandsSeparators(Config.DIFFICULTY_LEVELS[diff][1]) + ') <i class="' + Config.DIFFICULTY_ICONS[diff] + '"></i>';
+          + ' (' + Config.DIFFICULTY_LEVELS[diff][0] + '-' + Num.format(Config.DIFFICULTY_LEVELS[diff][1]) + ') <i class="' + Config.DIFFICULTY_ICONS[diff] + '"></i>';
       }
       const achievements = data['currentGame']['achievements'] || [];
       const newLifeAch = data["currentGame"]["newLifeAchievements"] || [];
@@ -245,7 +250,7 @@ var numberGuessingGame = (() => {
     let guesses = GuessUtil.genGuessArr(answer, max);
     return guesses.join("; ") + " (" + guesses.length + ")";
   }
-  
+
   function gotoStartScreen() {
     data['currentView'] = Config.VIEW.START;
     difficultySelect.value = data['selectedDifficulty'];
@@ -269,16 +274,15 @@ var numberGuessingGame = (() => {
     render();
   }
   function guess() {
-    const guessedInput = numberInput.value;
-    if (guessedInput) {
-      data['currentGame']['guessedNumber'] = parseInt(guessedInput, 10);
-      data['currentGame']['guesses'].push(Num.thousandsSeparators(data['currentGame']['guessedNumber']));
-      //data['currentGame']['guesses'].sort();
-    }
-    else {
-      data['currentGame']['guessedNumber'] = null;
+    const guessedInput = numberInput.value && parseInt(numberInput.value, 10);
+    const lastGuess = data['currentGame']['guessedNumber'];
+    data['currentGame']['guessedNumber'] = guessedInput;
+    //repeating the last guessed value doesn't count.
+    if (lastGuess !== guessedInput) {
+      data['currentGame']['guesses'].push(Num.format(data['currentGame']['guessedNumber']));
     }
     numberInput.focus();
+    //matches
     if (data['currentGame']['guessedNumber'] === data['currentGame']['number']) {
       endGame();
     }
@@ -293,7 +297,7 @@ var numberGuessingGame = (() => {
     const lifeAchievements = Achievements.getLifeList(data);
     const gameAchNameArr = gameAchievements.filter(ach => ach.isComplete).map(ach => ach.name);
     const lifeAchNameArr = lifeAchievements.filter(ach => ach.isComplete).map(ach => ach.name);
-    
+
     if (!data["achievements"]) data["achievements"] = [];
     let newLifeAch = lifeAchNameArr.filter(ach => !data["achievements"].includes(ach));
     data["currentGame"]["achievements"] = gameAchNameArr.concat(newLifeAch);
@@ -331,21 +335,22 @@ var numberGuessingGame = (() => {
         , '</thead><tbody>'
       ], arr);
       if (size > 0) {
-        let achievements;
+        let achievements, count;
         for (i = 0; i < size; i++) {
           item = filteredList[i];
           achievements = item['achievements'] || [];
-          HtmlUtil.addArrToArr([
-            '<tr>'
-            , '<td><i class="' + Config.DIFFICULTY_ICONS[item['difficulty']] + '" title="', item['difficulty'], '"></i> '
-              , DateUtil.format(new Date(item['startDate']), "M/d/yyyy")
-            , '</td>'
-            , '<td>'
-              , '<span title="', item['guesses'].join("; "), '">', item['guesses'].length, '</span>'
-              , ' <span title="', achievements.join("; "), '">(', achievements.length, '<i class="fas fa-medal text-warning"></i>)</span>'
-            , '</td>'
-            , '<td>', (item['timeMs'] / 1000), 's</td>'
-            , '</tr>'
+          count = achievements.length;
+          HtmlUtil.addArrToArr([`
+            <tr>
+              <td><i class="${Config.DIFFICULTY_ICONS[item['difficulty']]}" title="${item['difficulty']}"></i>
+              ${DateUtil.format(new Date(item['startDate']), "M/d/yyyy")}
+            </td>
+            <td>
+              <span title="${item['guesses'].join("; ")}">${item['guesses'].length}</span>
+              ${count > 0 ? `<span title="${achievements.join("; ")}">(${count} <i class="fas fa-medal text-warning"></i>)</span>` : ''}
+            </td>
+            <td>${item['timeMs'] / 1000}s</td>
+            </tr>`
           ], arr);
         }
       }

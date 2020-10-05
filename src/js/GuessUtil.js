@@ -1,5 +1,6 @@
 const GuessUtil = (() => {
   return {
+    //computer guessing
     genGuessArr: (answer, max) => {
       let guesses = []
         , found = false
@@ -7,7 +8,7 @@ const GuessUtil = (() => {
         , guess = Math.floor(max / 2)
       ;
       while(!found) {
-        guesses.push(Num.thousandsSeparators(guess));
+        guesses.push(Num.format(guess));
         if (guess === answer) {
           found = true;
         }

@@ -1,4 +1,4 @@
-var numberGuessingGame = (function() {
+var numberGuessingGame = (() => {
   const APP_DATA_KEY = "number-guessing-game"
     , startScreen = document.getElementById("startScreen")
     , gameScreen = document.getElementById("gameScreen")
@@ -8,37 +8,30 @@ var numberGuessingGame = (function() {
     , guessBtn = document.getElementById("guessBtn")
     , difficultySelect = document.getElementById("difficultySelect")
     , lastGuessResponse = document.getElementById("lastGuessResponse")
-    , VIEW = { START: 1, GAME: 2, END: 3, HISTORY: 4 }
-    , difficulty = {
-      "Easy": [1, 10]
-      , "Medium": [1, 100]
-      , "Hard": [1, 1000]
-      , "Insane": [1, 10000]
-      , "Nightmare": [1, 1000000]
-    }
-    , difficultyIcon = {
-      "Easy": "far fa-laugh-beam"
-      , "Medium": "far fa-smile"
-      , "Hard": "far fa-grin-beam-sweat"
-      , "Insane": "far fa-grin-squint-tears"
-      , "Nightmare": "fas fa-poo"
-    }
-    , MAX_HISTORY = 10
+    , increaseIncrementBtn = document.getElementById("increaseIncrementBtn")
+    , decreaseIncrementBtn = document.getElementById("decreaseIncrementBtn")
+    , addBtn = document.getElementById("addBtn")
+    , subtractBtn = document.getElementById("subtractBtn")
   ;
+  const cache = {
+    "incrementBy": 1
+  }
   let data = {
-    "currentView": VIEW.START
+    "currentView": Config.VIEW.START
+    , "currentSubView": Config.SUB_VIEW.HISTORY
     , "selectedDifficulty": "Easy"
     , "currentGame": null
     , "history": []
   };
   window.onload = function() {
     loadData();
-    data['currentView'] = VIEW.START;
+    data['currentView'] = Config.VIEW.START;
     initUi();
     render();
   };
   function initUi() {
     const startBtns = document.querySelectorAll(".startBtn");
+    const switchSubViewBtn = document.querySelector(".switchSubViewBtn");
     const gotoStartScreenBtns = document.querySelectorAll(".gotoStartScreenBtn");
     if (startBtns) {
       let i, size = startBtns.length;
@@ -52,6 +45,15 @@ var numberGuessingGame = (function() {
         gotoStartScreenBtns[i].onclick = gotoStartScreen;
       }
     }
+    if (switchSubViewBtn) {
+      switchSubViewBtn.onclick = () => {
+        const isAchView = data["currentSubView"] && data["currentSubView"] === Config.SUB_VIEW.ACHIEVEMENTS;
+        data["currentSubView"] = isAchView ? Config.SUB_VIEW.HISTORY : Config.SUB_VIEW.ACHIEVEMENTS;
+        switchSubViewBtn.title = "See " + (isAchView ? "Achievements" : "History");
+        switchSubViewBtn.innerHTML = '<i class="fas fa-' + (isAchView ? 'medal' : 'history') + ' fa-fw"></i>';
+        render();
+      };
+    }
     guessBtn.onclick = function() {
       guess();
     };
@@ -63,9 +65,11 @@ var numberGuessingGame = (function() {
       this.value = this.value.replace(/\D/g, '');
     };
     let arr = [];
-    for (let diff in difficulty) {
+    for (let diff in Config.DIFFICULTY_LEVELS) {
       HtmlUtil.addArrToArr([
-        '<option value="', diff, '">', diff, ' (', difficulty[diff][0], '-', difficulty[diff][1], ')</option>'
+        '<option value="', diff, '">', diff, ' ('
+        , Config.DIFFICULTY_LEVELS[diff][0], '-'
+        , Num.thousandsSeparators(Config.DIFFICULTY_LEVELS[diff][1]), ')</option>'
       ], arr);
     }
     difficultySelect.innerHTML = arr.join("");
@@ -75,25 +79,68 @@ var numberGuessingGame = (function() {
     };
     difficultySelect.value = data['selectedDifficulty'];
     HtmlUtil.trigger(difficultySelect, "change");
+    increaseIncrementBtn.onclick = () => increaseIncrement();
+    decreaseIncrementBtn.onclick = () => decreaseIncrement();
+    addBtn.onclick = () => add();
+    subtractBtn.onclick = () => subtract();
   }
+  const increaseIncrement = () => {
+    changeIncrement(true);
+  };
+  const decreaseIncrement = () => {
+    changeIncrement(false);
+  };
+  const changeIncrement = increase => {
+    const incrementBy = cache["incrementBy"];
+    const diff = data['currentGame']['difficulty'];
+    const maxIncrement = Config.DIFFICULTY_LEVELS[diff][1] / 10;
+    if (increase) {
+      if (incrementBy < maxIncrement) {
+        cache["incrementBy"] = incrementBy * 10;
+      }
+    }
+    else {
+      if (incrementBy > 1) {
+        cache["incrementBy"] = incrementBy / 10;
+      }
+    }
+    increaseIncrementBtn.disabled = cache["incrementBy"] === maxIncrement;
+    decreaseIncrementBtn.disabled = cache["incrementBy"] === 1;
+    const incrementStr = Num.thousandsSeparators(cache["incrementBy"]);
+    addBtn.innerHTML = "+" + incrementStr;
+    subtractBtn.innerHTML = "-" + incrementStr;
+  };
+  const add = () => {
+    let num = parseInt(numberInput.value || 0);
+    const sum = num + cache["incrementBy"];
+    const difficulty = data['currentGame']['difficulty'];
+    const maxValue = Config.DIFFICULTY_LEVELS[difficulty][1];
+    numberInput.value = sum < maxValue ? sum : maxValue;
+    //console.log("add num=" + num + ", incrementBy=" + cache["incrementBy"] + ", sum=" + sum);
+  };
+  const subtract = () => {
+    let num = parseInt(numberInput.value || 0);
+    let difference = num - parseInt(cache["incrementBy"]);
+    numberInput.value = difference < 0 ? 0 : difference;
+    //console.log("subtract num=" + num + ", decrementBy=" + cache["incrementBy"] + ", difference=" + difference);
+  };
   function render() {
-    const isStart = data['currentView'] === VIEW.START
-      , isGame = data['currentView'] === VIEW.GAME
-      , isEnd = data['currentView'] === VIEW.END
-      , isHistory = data['currentView'] === VIEW.HISTORY
+    const isStart = data['currentView'] === Config.VIEW.START
+      , isGame = data['currentView'] === Config.VIEW.GAME
+      , isEnd = data['currentView'] === Config.VIEW.END
+      , isHistory = data['currentView'] === Config.VIEW.HISTORY
     ;
     startScreen.style.display = isStart ? '' : 'none';
     gameScreen.style.display = isGame ? '' : 'none';
     endScreen.style.display = isEnd ? '' : 'none';
     historyScreen.style.display = isHistory ? '' : 'none';
-
     //game screen
     let screen = null;
     switch (data['currentView']) {
-      case VIEW.START: screen = startScreen; break;
-      case VIEW.GAME: screen = gameScreen; break;
-      case VIEW.END: screen = endScreen; break;
-      case VIEW.HISTORY: screen = historyScreen; break;
+      case Config.VIEW.START: screen = startScreen; break;
+      case Config.VIEW.GAME: screen = gameScreen; break;
+      case Config.VIEW.END: screen = endScreen; break;
+      case Config.VIEW.HISTORY: screen = historyScreen; break;
     }
     if (!screen) {
       console.error("currentView value NOT FOUND.");
@@ -122,29 +169,85 @@ var numberGuessingGame = (function() {
       let prevGuesses = screen.querySelector('.prevGuesses');
       const guesses = data['currentGame']['guesses'];
       if (guesses && guesses.length > 0) {
-        prevGuesses.innerHTML = '<strong>Previous Guesses:</strong> ' + guesses.join(", ")
+        prevGuesses.innerHTML = '<strong>Guesses:</strong> ' + guesses.join("; ")
           + ' (' + guesses.length + ')';
       }
       else {
         prevGuesses.innerHTML = "";
       }
+      let cpuGuesses = screen.querySelector('.cpuGuesses');
+      if (cpuGuesses) {
+        const diff = data['currentGame']['difficulty'];
+        cpuGuesses.innerHTML = isEnd ? "<strong>CPU:</strong> " + displayCpuGuesses(number, Config.DIFFICULTY_LEVELS[diff][1]) : '';
+      }
       const timeMs = screen.querySelector('.timeMs')
         , difficultyDiv = screen.querySelector('.difficulty')
+        , achievementsDiv = screen.querySelector('.achievements')
       ;
       if (timeMs) {
-        timeMs.innerHTML = "<strong>Time:</strong> " + (data['currentGame']['timeMs'] / 1000) + " second(s)";
+        timeMs.innerHTML = "<strong>Time:</strong> " + (data['currentGame']['timeMs'] / 1000) + " seconds";
       }
       if (difficultyDiv) {
         const diff = data['currentGame']['difficulty'];
         difficultyDiv.innerHTML = "<strong>Difficulty:</strong> " + diff
-          + ' (' + difficulty[diff][0] + '-' + difficulty[diff][1] + ') <i class="' + difficultyIcon[diff] + '"></i>';
+          + ' (' + Config.DIFFICULTY_LEVELS[diff][0] + '-' + Num.thousandsSeparators(Config.DIFFICULTY_LEVELS[diff][1]) + ') <i class="' + Config.DIFFICULTY_ICONS[diff] + '"></i>';
       }
+      const achievements = data['currentGame']['achievements'] || [];
+      const newLifeAch = data["currentGame"]["newLifeAchievements"] || [];
+      displayAchievements(achievements.concat(newLifeAch), achievementsDiv);
     }
     renderHistory(screen);
     numberInput.focus();
   }
+  function displayAchievements(achievements, elem, includeNotAchieved) {
+    const arr = [];
+    if (!elem) {
+      return;
+    }
+    const achCount = achievements.length;
+    if (achCount > 0) {
+      HtmlUtil.addArrToArr([
+        '<div class="card">'
+        , '<div class="card-header p-2"><h4 class="m-0">Achievements (', achCount, ' of ', Achievements.getCount(), ')</h4></div>'
+        , '<div class="card-body pt-0 pb-0">'
+          , '<table class="table achievementTable"><tbody>'
+      ], arr);
+      achievements.map(ach => {
+        HtmlUtil.addArrToArr([
+          '<tr><td><div class="circle"><h2><i class="fas fa-medal text-warning"></i></h2></div></td>'
+          , '<td class="text-left">'
+            , '<div class="font-weight-bold">', ach, '</div>'
+            , '<div>', Achievements.get(ach).description, '</div>'
+          , '</td></tr>'
+        ], arr);
+      });
+      if (includeNotAchieved) {
+        Achievements.getAll().map(ach => {
+          if (!achievements.includes(ach)) {
+            HtmlUtil.addArrToArr([
+              '<tr><td><div class="circle"><h2><i class="fas fa-medal text-secondary"></i></h2></div></td>'
+              , '<td class="text-left text-secondary">'
+                , '<div class="font-weight-bold">', ach, '</div>'
+                , '<div>', Achievements.get(ach).description, '</div>'
+              , '</td></tr>'
+            ], arr);
+          }
+        });
+      }
+      HtmlUtil.addArrToArr([
+          '</tbody></table>'
+        , '</div></div>'
+      ], arr);
+    }
+    elem.innerHTML = arr.join("");
+  }
+  function displayCpuGuesses(answer, max) {
+    let guesses = GuessUtil.genGuessArr(answer, max);
+    return guesses.join("; ") + " (" + guesses.length + ")";
+  }
+  
   function gotoStartScreen() {
-    data['currentView'] = VIEW.START;
+    data['currentView'] = Config.VIEW.START;
     difficultySelect.value = data['selectedDifficulty'];
     HtmlUtil.trigger(difficultySelect, "change");
     render();
@@ -152,22 +255,24 @@ var numberGuessingGame = (function() {
   function startGame() {
     const selectedDiff = data['selectedDifficulty'];
     numberInput.value = "";
-    data['currentView'] = VIEW.GAME;
+    data['currentView'] = Config.VIEW.GAME;
     data['currentGame'] = {
-      'number': randRange(difficulty[selectedDiff][0], difficulty[selectedDiff][1])
+      'number': randRange(Config.DIFFICULTY_LEVELS[selectedDiff][0], Config.DIFFICULTY_LEVELS[selectedDiff][1])
       , 'guessedNumber': null
       , 'difficulty': selectedDiff
       , 'guesses': []
       , 'startDate': new Date()
       , 'timeMs': 0
     };
+    cache["incrementBy"] = Config.DIFFICULTY_LEVELS[selectedDiff][1] / 10;
+    changeIncrement(true);
     render();
   }
   function guess() {
     const guessedInput = numberInput.value;
     if (guessedInput) {
       data['currentGame']['guessedNumber'] = parseInt(guessedInput, 10);
-      data['currentGame']['guesses'].push(data['currentGame']['guessedNumber']);
+      data['currentGame']['guesses'].push(Num.thousandsSeparators(data['currentGame']['guessedNumber']));
       //data['currentGame']['guesses'].sort();
     }
     else {
@@ -182,52 +287,78 @@ var numberGuessingGame = (function() {
     }
   }
   function endGame() {
-    data['currentView'] = VIEW.END;
+    data['currentView'] = Config.VIEW.END;
     data['currentGame']['timeMs'] = (new Date()).getTime() - data['currentGame']['startDate'].getTime();
+    const gameAchievements = Achievements.getGameList(data);
+    const lifeAchievements = Achievements.getLifeList(data);
+    const gameAchNameArr = gameAchievements.filter(ach => ach.isComplete).map(ach => ach.name);
+    const lifeAchNameArr = lifeAchievements.filter(ach => ach.isComplete).map(ach => ach.name);
+    
+    if (!data["achievements"]) data["achievements"] = [];
+    let newLifeAch = lifeAchNameArr.filter(ach => !data["achievements"].includes(ach));
+    data["currentGame"]["achievements"] = gameAchNameArr.concat(newLifeAch);
+    data["currentGame"]["achievements"].forEach(ach => !data["achievements"].includes(ach) && data["achievements"].push(ach));
     data['history'].push(data['currentGame']);
     data['history'].sort(function(a, b) {
       const aDate = new Date(a.startDate).getTime()
-        , bDate = new Date(b.startDate).getTime();
+      , bDate = new Date(b.startDate).getTime();
       return bDate - aDate;
     });
+    //remove duplicates
+    data["achievements"] = [...new Set(data["achievements"])];
+    data["achievements"].sort();
     saveData();
     render();
   }
   function renderHistory(screen) {
     const playerHistory = screen.querySelector(".playerHistory");
+    const achievementsDiv = screen.querySelector(".achievements");
     if (!playerHistory) {
       return;
     }
-    const diff = data['selectedDifficulty'];
-    const filteredList = data['history'].filter(item => { return item['difficulty'] === diff; });
-    let arr = [], i, size = filteredList.length, item;
-    HtmlUtil.addArrToArr([
-      //'<h4><strong>Difficulty:</strong> ', diff, ' <i class="', difficultyIcon[diff], '"></i></h4>'
-      '<table class="table"><thead>'
-      , '<th>Date</th>'
-      , '<th>Difficulty</th>'
-      , '<th>Guesses</th>'
-      , '<th>Time</th>'
-      , '</thead><tbody>'
-    ], arr);
-    if (size > 0) {
-      for (i = 0; i < size; i++) {
-        item = filteredList[i];
-        HtmlUtil.addArrToArr([
-          '<tr>'
-          , '<td>', DateUtil.format(new Date(item['startDate']), "M/dd/yyyy HH:mm"), '</td>'
-          , '<td>', ' <i class="' + difficultyIcon[item['difficulty']] + '"></i></td>' //, item['difficulty']
-          , '<td><div title="', item['guesses'].join(", "), '">'
-            , item['guesses'].length, '</div></td>'
-          , '<td>', (item['timeMs'] / 1000), 's</td>'
-          , '</tr>'
-        ], arr);
+    let arr = [];
+    if (!data['currentSubView'] || data['currentSubView'] === Config.SUB_VIEW.HISTORY) {
+      const diff = data['selectedDifficulty'];
+      const filteredList = data['history'].filter(item => { return item['difficulty'] === diff; });
+      filteredList.sort((a, b) => a.timeMs - b.timeMs);// sort by shortest timeMs first
+      let i, size = filteredList.length, item;
+      HtmlUtil.addArrToArr([
+        //'<h4><strong>Difficulty:</strong> ', diff, ' <i class="', DIFFICULTY_ICONS[diff], '"></i></h4>'
+        '<table class="table"><thead>'
+        , '<th>Date</th>'
+        , '<th>Guesses</th>'
+        , '<th>Time</th>'
+        , '</thead><tbody>'
+      ], arr);
+      if (size > 0) {
+        let achievements;
+        for (i = 0; i < size; i++) {
+          item = filteredList[i];
+          achievements = item['achievements'] || [];
+          HtmlUtil.addArrToArr([
+            '<tr>'
+            , '<td><i class="' + Config.DIFFICULTY_ICONS[item['difficulty']] + '" title="', item['difficulty'], '"></i> '
+              , DateUtil.format(new Date(item['startDate']), "M/d/yyyy")
+            , '</td>'
+            , '<td>'
+              , '<span title="', item['guesses'].join("; "), '">', item['guesses'].length, '</span>'
+              , ' <span title="', achievements.join("; "), '">(', achievements.length, '<i class="fas fa-medal text-warning"></i>)</span>'
+            , '</td>'
+            , '<td>', (item['timeMs'] / 1000), 's</td>'
+            , '</tr>'
+          ], arr);
+        }
       }
+      else {
+        arr.push('<tr><td colspan="4">No records found.</td></tr>');
+      }
+      arr.push('</tbody></table>');
+      achievementsDiv.style.display = "none";
     }
-    else {
-      arr.push('<tr><td colspan="4">No records found.</td></tr>');
+    else if (data['currentSubView'] === Config.SUB_VIEW.ACHIEVEMENTS) {
+      achievementsDiv.style.display = "";
+      displayAchievements(data["achievements"] || [], achievementsDiv, includeNotAchieved = true);
     }
-    arr.push('</tbody></table>');
     playerHistory.innerHTML = arr.join("");
   }
   function loadData() {

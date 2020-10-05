@@ -46,8 +46,10 @@
     <exec dir="." executable="cmd" >
       <arg line="/c npx google-closure-compiler"/>
       <arg line="--compilation_level ADVANCED_OPTIMIZATIONS"/>
-      <arg line="--js ./src/DateUtil.js"/>
-      <arg line="--js ./src/HtmlUtil.js"/>
+      <arg line="--js ./src/js/DateUtil.js"/>
+      <arg line="--js ./src/js/HtmlUtil.js"/>
+      <arg line="--js ./src/js/Num.js"/>
+      <arg line="--js ./src/js/Achievements.js"/>
       <arg line="--js ./src/script.js"/>
       <arg line="--js_output_file ./public/script.js"/>
     </exec>

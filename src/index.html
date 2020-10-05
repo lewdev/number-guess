@@ -42,26 +42,43 @@
     <button class="btn btn-lg btn-primary mt-2 startBtn">
       <i class="far fa-play-circle fa-fw"></i> Start
     </button>
+    <button class="btn btn-lg btn-info mt-2 switchSubViewBtn">
+      <i class="fas fa-history fa-fw"></i>
+    </button>
     <a href="#open-modal" class="btn btn-secondary btn-lg mt-2" title="About this Project">
       <i class="fas fa-info-circle"></i>
     </a>
-    <div class="m-3 playerHistory"></div>
+    <div class="m-1 playerHistory"></div>
+    <div class="m-1 achievements"></div>
   </div>
-  <div id="gameScreen" class="screen" style="display:none">
+  <div id="gameScreen" class="screen p-2" style="display:none">
     <div class="m-4" style="color: Mediumslateblue;">
       <i class="far fa-question-circle fa-lg fa-5x"></i>
     </div>
     <h3>What Number Is It?</h3>
     <div class="m-3 difficulty"></div>
     <input type="number" id="numberInput" class="form-control mb-2 ml-auto mr-auto" autofocus style="width:8em" />
-    <button class="btn btn-lg btn-secondary mt-2 gotoStartScreenBtn" title="Go back to start screen.">
-      <i class="fas fa-arrow-left"></i>
-    </button>
-    <button class="btn btn-lg btn-primary mt-2" id="guessBtn">
+    <div id="buttonPanel" class="row">
+      <div class="col-4 pr-0">
+        <button id="subtractBtn" class="btn btn-secondary btn-lg w-100 ml-1" style="height:5em;">-10</button>
+      </div>
+      <div class="col-4">
+        <button id="increaseIncrementBtn" class="btn btn-info btn-lg w-100 d-block mb-2">&#x25b2;</button>
+        <button id="decreaseIncrementBtn" class="btn btn-info btn-lg w-100 d-block">&#9660;</button>
+      </div>
+      <div class="col-4 pl-0">
+        <button id="addBtn" class="btn btn-secondary btn-lg w-100 mr-1" style="height:5em;">+10</button>
+      </div>
+    </div>
+    <button class="btn btn-lg btn-primary mt-4 w-100" id="guessBtn" style="height:5em;">
       <i class="far fa-play-circle fa-fw"></i> Guess
     </button>
     <div id="lastGuessResponse" class="m-3"></div>
     <div class="m-3 prevGuesses"></div>
+    <button class="btn btn-lg btn-secondary mt-2 gotoStartScreenBtn d-block mr-auto ml-auto mt-5"
+      title="Go back to start screen.">
+      <i class="fas fa-arrow-left"></i> Menu
+    </button>
   </div>
   <div id="endScreen" class="screen" style="display:none">
     <h3>You guessed CORRECT!</h3>
@@ -71,12 +88,13 @@
     <button class="btn btn-lg btn-primary mt-2 startBtn">
       <i class="far fa-play-circle fa-fw"></i> Play Again
     </button>
-    <div class="card card-body mt-2 mb-2 p-2 ">
-      <div class="m-3 prevGuesses"></div>
-      <div class="m-3 timeMs"></div>
-      <div class="m-3 difficulty"></div>
+    <div class="card card-body mt-2 mb-2 p-3">
+      <div class="prevGuesses"></div>
+      <div class="mt-2 cpuGuesses"></div>
+      <div class="mt-2 timeMs"></div>
+      <div class="mt-2 difficulty"></div>
     </div>
-    <div class="m-3 playerHistory"></div>
+    <div class="mt-2 achievements"></div>
   </div>
   <div id="historyScreen" class="screen" style="display:none">
     History Screen
@@ -135,7 +153,11 @@
 <!-- <script src="./assets/polyfill.min.js"></script> -->
 <!-- <script src="./assets/bootstrap.bundle.min.js"></script> -->
 <!-- <script src="./assets/bootstrap.min.js"></script> -->
-<script src="./DateUtil.js"></script>
-<script src="./HtmlUtil.js"></script>
+<script src="./js/DateUtil.js"></script>
+<script src="./js/HtmlUtil.js"></script>
+<script src="./js/Config.js"></script>
+<script src="./js/Num.js"></script>
+<script src="./js/GuessUtil.js"></script>
+<script src="./js/Achievements.js"></script>
 <script src="./script.js"></script>
 </body></html>

@@ -68,7 +68,7 @@ var numberGuessingGame = (() => {
           e.preventDefault();
           guess();
       }
-      this.value = this.value.replace(/\D/g, '');
+      e.target.value = e.target.value.replace(/\D/g, '');
     };
     let arr = [];
     for (let diff in Config.DIFFICULTY_LEVELS) {
@@ -85,17 +85,11 @@ var numberGuessingGame = (() => {
     };
     difficultySelect.value = data['selectedDifficulty'];
     HtmlUtil.trigger(difficultySelect, "change");
-    increaseIncrementBtn.onclick = () => increaseIncrement();
-    decreaseIncrementBtn.onclick = () => decreaseIncrement();
+    increaseIncrementBtn.onclick = () => changeIncrement(true);
+    decreaseIncrementBtn.onclick = () => changeIncrement(false);
     addBtn.onclick = () => add();
     subtractBtn.onclick = () => subtract();
   }
-  const increaseIncrement = () => {
-    changeIncrement(true);
-  };
-  const decreaseIncrement = () => {
-    changeIncrement(false);
-  };
   const changeIncrement = increase => {
     const incrementBy = cache["incrementBy"];
     const diff = data['currentGame']['difficulty'];
@@ -115,7 +109,7 @@ var numberGuessingGame = (() => {
     subtractBtn.innerHTML = "-" + incrementStr;
   };
   const add = () => {
-    let num = parseInt(numberInput.value || 0);
+    let num = parseInt(numberInput.value || 0, 10);
     const sum = num + cache["incrementBy"];
     const difficulty = data['currentGame']['difficulty'];
     const maxValue = Config.DIFFICULTY_LEVELS[difficulty][1];
@@ -123,8 +117,8 @@ var numberGuessingGame = (() => {
     //console.log("add num=" + num + ", incrementBy=" + cache["incrementBy"] + ", sum=" + sum);
   };
   const subtract = () => {
-    let num = parseInt(numberInput.value || 0);
-    let difference = num - parseInt(cache["incrementBy"]);
+    let num = parseInt(numberInput.value || 0, 10);
+    let difference = num - parseInt(cache["incrementBy"], 10);
     numberInput.value = difference < 0 ? 0 : difference;
     //console.log("subtract num=" + num + ", decrementBy=" + cache["incrementBy"] + ", difference=" + difference);
   };
@@ -199,7 +193,7 @@ var numberGuessingGame = (() => {
       }
       const achievements = data['currentGame']['achievements'] || [];
       const newLifeAch = data["currentGame"]["newLifeAchievements"] || [];
-      displayAchievements(achievements.concat(newLifeAch), achievementsDiv);
+      displayAchievements(achievements.concat(newLifeAch), achievementsDiv, false);
     }
     renderHistory(screen);
     numberInput.focus();
@@ -362,7 +356,8 @@ var numberGuessingGame = (() => {
     }
     else if (data['currentSubView'] === Config.SUB_VIEW.ACHIEVEMENTS) {
       achievementsDiv.style.display = "";
-      displayAchievements(data["achievements"] || [], achievementsDiv, includeNotAchieved = true);
+      let includeNotAchieved = true;
+      displayAchievements(data["achievements"] || [], achievementsDiv, includeNotAchieved);
     }
     playerHistory.innerHTML = arr.join("");
   }

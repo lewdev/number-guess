@@ -53,16 +53,16 @@
     <div class="m-2 playerHistory"></div>
     <div class="m-2 achievements"></div>
   </div>
-  <div id="gameScreen" class="screen p-2" style="display:none">
-    <div class="m-4" style="color: Mediumslateblue;">
-      <i class="far fa-question-circle fa-lg fa-5x"></i>
-    </div>
-    <h3>What Number Is It?</h3>
+  <div id="gameScreen" class="screen p-2 mt-4" style="display:none">
+    <h3>
+      <i class="far fa-question-circle fa-lg" style="color: Mediumslateblue;"></i>
+      What Number Is It?
+    </h3>
     <div class="m-3 difficulty"></div>
     <input type="number" id="numberInput" class="form-control mb-2 ml-auto mr-auto" autofocus style="width:8em" />
     <div id="buttonPanel" class="row">
       <div class="col-4 pr-0">
-        <button id="subtractBtn" class="btn btn-secondary btn-lg w-100 ml-1" style="height:5em;">-10</button>
+        <button id="subtractBtn" class="btn btn-secondary btn-lg w-100" style="height:5em;">-10</button>
       </div>
       <div class="col-4">
         <button id="increaseIncrementBtn" class="btn btn-info btn-lg w-100 d-block mb-2">&#x25b2;</button>
@@ -72,7 +72,7 @@
         <button id="addBtn" class="btn btn-secondary btn-lg w-100 mr-1" style="height:5em;">+10</button>
       </div>
     </div>
-    <button class="btn btn-lg btn-primary mt-4 w-100" id="guessBtn" style="height:5em;">
+    <button class="btn btn-lg btn-primary mt-2 w-100" id="guessBtn" style="height:5em;">
       <i class="far fa-play-circle fa-fw"></i> Guess
     </button>
     <div id="lastGuessResponse" class="m-3"></div>
